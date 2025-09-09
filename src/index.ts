@@ -1,5 +1,5 @@
 import ts from 'typescript';
-
+import {createWriteStream, write, WriteStream} from 'node:fs';
 export type Text = string;
 
 export type HTMLElement = Text | {
@@ -62,6 +62,7 @@ export type P<T extends HTMLElement[] | HTMLElement> =
 
 
 const targetPath = process.argv[2];
+const outPath = process.argv[3] || './index.html';
 const program = ts.createProgram([targetPath], {});
 const sourceFile = program.getSourceFile(targetPath)!;
 const checker = program.getTypeChecker();
@@ -118,6 +119,19 @@ ${input.children.map((item) => {
 ${space}</${input.tag}>`
 }
 
+function renderToStream(input: HtmlJson, writeStream: WriteStream, indent: number = 0) {
+    const space = ' '.repeat(indent * 2);
+    writeStream.write(`${space}<${input.tag}>\n`);
+    input.children.map((item) => {
+        if (typeof item === 'string') {
+            writeStream.write(`${space}  ${item}\n`);
+        } else {
+            renderToStream(item, writeStream, indent + 1);
+        }
+    })
+    writeStream.write(`${space}</${input.tag}>\n`);
+}
+
 function visit(node: ts.Node) {
   if (ts.isTypeAliasDeclaration(node)) {
     const inferredType = checker.typeToString(
@@ -131,8 +145,9 @@ function visit(node: ts.Node) {
       const type = checker.getTypeAtLocation(node);
       const stringJSON = checker.typeToTypeNode(type ,undefined, undefined);
       const result = traverseNode(stringJSON!);
-      console.log(result);
-      console.log(renderToHtml(result))
+      const writeStream = createWriteStream(outPath, { flags: 'w'});
+      renderToStream(result, writeStream);
+      writeStream.end('\n');
     }
   }
   ts.forEachChild(node, visit);
