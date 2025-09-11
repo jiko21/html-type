@@ -5,7 +5,7 @@ import ts, { SyntaxKind } from 'typescript';
 import { type HtmlJson, renderToStream } from './html';
 
 export function traverseNode(node: ts.Node, indent: number = 0): HtmlJson {
-  console.log(SyntaxKind[node.kind])
+  console.log(SyntaxKind[node.kind]);
   if (ts.isTypeLiteralNode(node)) {
     let tag = '';
     let children: (HtmlJson | string)[] = [];
@@ -17,8 +17,7 @@ export function traverseNode(node: ts.Node, indent: number = 0): HtmlJson {
         member.name.expression.escapedText
       ) {
         tag = member.name.expression.escapedText.replace('Brand', '');
-      }
-      else if (
+      } else if (
         member.name &&
         ts.isIdentifierOrThisTypeNode(member.name) &&
         ts.isPropertySignature(member)

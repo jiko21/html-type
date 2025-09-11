@@ -28,9 +28,7 @@ export type Html<T extends HTMLNode[] | HTMLNode> = T extends HTMLNode[]
       : never;
 
 declare const bodyBrand: unique symbol;
-export type Body<T extends HTMLNode[] | HTMLNode> = T extends Html<
-  HTMLNode | HTMLNode[]
->
+export type Body<T extends HTMLNode[] | HTMLNode> = T extends Html<HTMLNode | HTMLNode[]>
   ? never
   : T extends HTMLNode[]
     ? {
@@ -58,12 +56,12 @@ export type Div<T extends HTMLNode[] | HTMLNode> = T extends Html<HTMLNode | HTM
     ? InvalidDivContent<T>
     : T extends HTMLNode[]
       ? {
-          [divBrand]: 'div',
+          [divBrand]: 'div';
           children: T;
         }
       : T extends HTMLNode
         ? {
-            [divBrand]: 'div',
+            [divBrand]: 'div';
             children: T;
           }
         : never;
