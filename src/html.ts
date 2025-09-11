@@ -2,20 +2,20 @@
 
 export type Text = string;
 
-export type HTMLElement =
+export type HTMLNode =
   | Text
   | {
-      children: (HTMLElement | Text)[] | HTMLElement | Text;
+      children: (HTMLNode | Text)[] | HTMLNode | Text;
     };
 
 // HTML Brand Types
 declare const htmlBrand: unique symbol;
-export type Html<T extends HTMLElement[] | HTMLElement> = T extends HTMLElement[]
+export type Html<T extends HTMLNode[] | HTMLNode> = T extends HTMLNode[]
   ? {
       [htmlBrand]: 'html';
       children: T;
     }
-  : T extends HTMLElement
+  : T extends HTMLNode
     ? {
         [htmlBrand]: 'html';
         children: T;
@@ -28,16 +28,16 @@ export type Html<T extends HTMLElement[] | HTMLElement> = T extends HTMLElement[
       : never;
 
 declare const bodyBrand: unique symbol;
-export type Body<T extends HTMLElement[] | HTMLElement> = T extends Html<
-  HTMLElement | HTMLElement[]
+export type Body<T extends HTMLNode[] | HTMLNode> = T extends Html<
+  HTMLNode | HTMLNode[]
 >
   ? never
-  : T extends HTMLElement[]
+  : T extends HTMLNode[]
     ? {
         [bodyBrand]: 'body';
         children: T;
       }
-    : T extends HTMLElement
+    : T extends HTMLNode
       ? {
           [bodyBrand]: 'body';
           children: T;
@@ -50,18 +50,20 @@ type InvalidDivContent<T> = {
   __invalidType: T;
 };
 
-declare const pBrand: unique symbol;
+declare const divBrand: unique symbol;
 
-export type Div<T extends HTMLElement[] | HTMLElement> = T extends Html<HTMLElement | HTMLElement[]>
+export type Div<T extends HTMLNode[] | HTMLNode> = T extends Html<HTMLNode | HTMLNode[]>
   ? InvalidDivContent<T>
-  : T extends Body<HTMLElement | HTMLElement[]>
+  : T extends Body<HTMLNode | HTMLNode[]>
     ? InvalidDivContent<T>
-    : T extends HTMLElement[]
+    : T extends HTMLNode[]
       ? {
+          [divBrand]: 'div',
           children: T;
         }
-      : T extends HTMLElement
+      : T extends HTMLNode
         ? {
+            [divBrand]: 'div',
             children: T;
           }
         : never;
@@ -71,18 +73,19 @@ type InvalidPContent<T> = {
   __invalidType: T;
 };
 
-export type P<T extends HTMLElement[] | HTMLElement> = T extends Div<HTMLElement | HTMLElement[]>
+declare const pBrand: unique symbol;
+export type P<T extends HTMLNode[] | HTMLNode> = T extends Div<HTMLNode | HTMLNode[]>
   ? InvalidPContent<T>
-  : T extends Html<HTMLElement | HTMLElement[]>
+  : T extends Html<HTMLNode | HTMLNode[]>
     ? InvalidPContent<T>
-    : T extends Body<HTMLElement | HTMLElement[]>
+    : T extends Body<HTMLNode | HTMLNode[]>
       ? InvalidPContent<T>
-      : T extends HTMLElement[]
+      : T extends HTMLNode[]
         ? {
             [pBrand]: 'p';
             children: T;
           }
-        : T extends HTMLElement
+        : T extends HTMLNode
           ? {
               [pBrand]: 'p';
               children: T;

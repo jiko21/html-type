@@ -1,21 +1,28 @@
 // TypeScript AST Processing Utilities
 
 import { createWriteStream } from 'node:fs';
-import ts from 'typescript';
+import ts, { SyntaxKind } from 'typescript';
 import { type HtmlJson, renderToStream } from './html';
 
 export function traverseNode(node: ts.Node, indent: number = 0): HtmlJson {
-  const _spaces = ' '.repeat(indent);
+  console.log(SyntaxKind[node.kind])
   if (ts.isTypeLiteralNode(node)) {
     let tag = '';
     let children: (HtmlJson | string)[] = [];
     node.members.forEach((member) => {
       if (
         member.name &&
+        ts.isComputedPropertyName(member.name) &&
+        ts.isIdentifier(member.name.expression) &&
+        member.name.expression.escapedText
+      ) {
+        tag = member.name.expression.escapedText.replace('Brand', '');
+      }
+      else if (
+        member.name &&
         ts.isIdentifierOrThisTypeNode(member.name) &&
         ts.isPropertySignature(member)
       ) {
-        console.log(member.name.escapedText);
         if (
           member.type &&
           ts.isLiteralTypeNode(member.type) &&
@@ -32,13 +39,6 @@ export function traverseNode(node: ts.Node, indent: number = 0): HtmlJson {
             children = [traverseNode(member.type, indent + 2)];
           }
         }
-      } else if (
-        member.name &&
-        ts.isComputedPropertyName(member.name) &&
-        ts.isIdentifier(member.name.expression) &&
-        member.name.expression.escapedText
-      ) {
-        tag = member.name.expression.escapedText.replace('Brand', '');
       }
     });
     return {
@@ -51,30 +51,23 @@ export function traverseNode(node: ts.Node, indent: number = 0): HtmlJson {
 }
 
 export function visit(node: ts.Node, checker: ts.TypeChecker, outPath: string) {
-  if (ts.isTypeAliasDeclaration(node)) {
-    const _inferredType = checker.typeToString(
-      checker.getTypeAtLocation(node),
-      node,
-      ts.TypeFormatFlags.InTypeAlias
-    );
-    if (
-      ts.isTypeReferenceNode(node.type) &&
-      node.type.typeName &&
-      ts.isIdentifier(node.type.typeName) &&
-      (node.type.typeName.escapedText === 'Html' || node.type.typeName.escapedText === 'Body')
-    ) {
-      try {
-        const type = checker.getTypeAtLocation(node);
-        const stringJSON = checker.typeToTypeNode(type, undefined, undefined);
-        if (stringJSON) {
-          const result = traverseNode(stringJSON);
-          const writeStream = createWriteStream(outPath, { flags: 'w' });
-          renderToStream(result, writeStream);
-          writeStream.end('\n');
-        }
-      } catch (error) {
-        console.error(`Error processing type alias ${node.name.text}:`, error);
+  if (
+    ts.isTypeAliasDeclaration(node) &&
+    ts.isTypeReferenceNode(node.type) &&
+    node.type.typeName &&
+    ts.isIdentifier(node.type.typeName)
+  ) {
+    try {
+      const type = checker.getTypeAtLocation(node);
+      const typeNode = checker.typeToTypeNode(type, undefined, undefined);
+      if (typeNode) {
+        const result = traverseNode(typeNode);
+        const writeStream = createWriteStream(outPath, { flags: 'w' });
+        renderToStream(result, writeStream);
+        writeStream.end('\n');
       }
+    } catch (error) {
+      console.error(`Error processing type alias ${node.name.text}:`, error);
     }
   }
   ts.forEachChild(node, (childNode) => visit(childNode, checker, outPath));
@@ -121,44 +114,4 @@ export function processTypeScript(filePath: string, outPath: string): boolean {
     console.error('Error processing TypeScript AST:', error);
     return false;
   }
-}
-
-// TypeScript AST Helper Functions
-export function isHtmlOrBodyType(node: ts.Node): boolean {
-  if (ts.isTypeAliasDeclaration(node)) {
-    if (
-      ts.isTypeReferenceNode(node.type) &&
-      node.type.typeName &&
-      ts.isIdentifier(node.type.typeName)
-    ) {
-      const typeName = node.type.typeName.escapedText;
-      return typeName === 'Html' || typeName === 'Body';
-    }
-  }
-  return false;
-}
-
-export function extractTypeAliases(node: ts.Node): ts.TypeAliasDeclaration[] {
-  const aliases: ts.TypeAliasDeclaration[] = [];
-
-  function collectAliases(n: ts.Node) {
-    if (ts.isTypeAliasDeclaration(n)) {
-      aliases.push(n);
-    }
-    ts.forEachChild(n, collectAliases);
-  }
-
-  collectAliases(node);
-  return aliases;
-}
-
-export function getTypeName(typeAlias: ts.TypeAliasDeclaration): string | null {
-  if (
-    ts.isTypeReferenceNode(typeAlias.type) &&
-    typeAlias.type.typeName &&
-    ts.isIdentifier(typeAlias.type.typeName)
-  ) {
-    return typeAlias.type.typeName.escapedText.toString();
-  }
-  return null;
 }
