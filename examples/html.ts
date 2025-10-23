@@ -1,4 +1,4 @@
-import type { Html, P, Body, Div } from '../src/html';
+import type { Body, Div, Html, P } from '../src/html';
 
 // type A = HTML<"aaaa">;
 // type B = Html<
