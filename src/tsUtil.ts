@@ -15,7 +15,6 @@ export function traverseNode(node: ts.Node, indent: number = 0): HtmlJson {
         ts.isIdentifierOrThisTypeNode(member.name) &&
         ts.isPropertySignature(member)
       ) {
-        console.log(member.name.escapedText);
         if (
           member.type &&
           ts.isLiteralTypeNode(member.type) &&
@@ -65,9 +64,9 @@ export function visit(node: ts.Node, checker: ts.TypeChecker, outPath: string) {
     ) {
       try {
         const type = checker.getTypeAtLocation(node);
-        const stringJSON = checker.typeToTypeNode(type, undefined, undefined);
+        const stringJSON = checker.typeToTypeNode(type, undefined, ts.NodeBuilderFlags.InTypeAlias | ts.NodeBuilderFlags.NoTruncation);
         if (stringJSON) {
-          const result = traverseNode(stringJSON);
+          const result = traverseNode(stringJSON, 0);
           const writeStream = createWriteStream(outPath, { flags: 'w' });
           renderToStream(result, writeStream);
           writeStream.end('\n');
