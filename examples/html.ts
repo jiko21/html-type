@@ -19,6 +19,6 @@ type ComplexHtml = Html<
       Div<[P<'First paragraph'>, P<'Second paragraph'>]>,
       P<'test'>,
       Div<[P<'test1'>, Div<P<'test2'>>]>,
-   ]
+    ]
   >
 >;

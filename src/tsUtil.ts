@@ -64,7 +64,11 @@ export function visit(node: ts.Node, checker: ts.TypeChecker, outPath: string) {
     ) {
       try {
         const type = checker.getTypeAtLocation(node);
-        const stringJSON = checker.typeToTypeNode(type, undefined, ts.NodeBuilderFlags.InTypeAlias | ts.NodeBuilderFlags.NoTruncation);
+        const stringJSON = checker.typeToTypeNode(
+          type,
+          undefined,
+          ts.NodeBuilderFlags.InTypeAlias | ts.NodeBuilderFlags.NoTruncation
+        );
         if (stringJSON) {
           const result = traverseNode(stringJSON, 0);
           const writeStream = createWriteStream(outPath, { flags: 'w' });
