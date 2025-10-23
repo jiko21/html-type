@@ -50,7 +50,7 @@ type InvalidDivContent<T> = {
   __invalidType: T;
 };
 
-declare const pBrand: unique symbol;
+declare const divBrand: unique symbol;
 
 export type Div<T extends HTMLElement[] | HTMLElement> = T extends Html<HTMLElement | HTMLElement[]>
   ? InvalidDivContent<T>
@@ -58,10 +58,12 @@ export type Div<T extends HTMLElement[] | HTMLElement> = T extends Html<HTMLElem
     ? InvalidDivContent<T>
     : T extends HTMLElement[]
       ? {
+          [divBrand]: 'div';
           children: T;
         }
       : T extends HTMLElement
         ? {
+            [divBrand]: 'div';
             children: T;
           }
         : never;
@@ -70,6 +72,8 @@ type InvalidPContent<T> = {
   __error: `❌ <p> cannot contain block elements. Only inline elements are allowed in <p>.`;
   __invalidType: T;
 };
+
+declare const pBrand: unique symbol;
 
 export type P<T extends HTMLElement[] | HTMLElement> = T extends Div<HTMLElement | HTMLElement[]>
   ? InvalidPContent<T>
