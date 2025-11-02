@@ -5,7 +5,6 @@ import ts from 'typescript';
 import { type HtmlJson, renderToStream } from './html';
 
 export function traverseNode(node: ts.Node, indent: number = 0): HtmlJson {
-  const _spaces = ' '.repeat(indent);
   if (ts.isTypeLiteralNode(node)) {
     let tag = '';
     let children: (HtmlJson | string)[] = [];
@@ -51,11 +50,6 @@ export function traverseNode(node: ts.Node, indent: number = 0): HtmlJson {
 
 export function visit(node: ts.Node, checker: ts.TypeChecker, outPath: string) {
   if (ts.isTypeAliasDeclaration(node)) {
-    const _inferredType = checker.typeToString(
-      checker.getTypeAtLocation(node),
-      node,
-      ts.TypeFormatFlags.InTypeAlias
-    );
     if (
       ts.isTypeReferenceNode(node.type) &&
       node.type.typeName &&
