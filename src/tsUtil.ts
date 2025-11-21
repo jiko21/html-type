@@ -68,7 +68,7 @@ export function visit(node: ts.Node, checker: ts.TypeChecker, outPath: string) {
         const typeNode = checker.typeToTypeNode(
           type,
           undefined,
-          ts.NodeBuilderFlags.InTypeAlias | ts.NodeBuilderFlags.NoTruncation
+          ts.NodeBuilderFlags.NoTruncation
         );
         if (typeNode) {
           const result = traverseNode(typeNode, 0);
