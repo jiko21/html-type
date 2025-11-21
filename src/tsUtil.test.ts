@@ -2,12 +2,7 @@ import { describe, expect, mock, test } from 'bun:test';
 import * as fs from 'node:fs';
 import { join } from 'node:path';
 import ts from 'typescript';
-import {
-  createProgram,
-  processTypeScript,
-  traverseNode,
-  visit,
-} from './tsUtil';
+import { createProgram, processTypeScript, traverseNode, visit } from './tsUtil';
 
 // Helper function to create test TypeScript source files
 function createTestSourceFile(code: string, fileName: string = 'test.ts'): ts.SourceFile {

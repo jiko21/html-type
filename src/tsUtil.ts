@@ -1,7 +1,7 @@
 // TypeScript AST Processing Utilities
 
 import { createWriteStream } from 'node:fs';
-import ts from 'typescript';
+import ts, { SyntaxKind } from 'typescript';
 import { type HtmlJson, renderToStream } from './html';
 
 export function traverseNode(node: ts.Node, indent: number = 0): HtmlJson {
@@ -9,11 +9,7 @@ export function traverseNode(node: ts.Node, indent: number = 0): HtmlJson {
     let tag = '';
     let children: (HtmlJson | string)[] = [];
     node.members.forEach((member) => {
-      if (
-        member.name &&
-        ts.isPropertySignature(member) &&
-        ts.isIdentifier(member.name)
-      ) {
+      if (member.name && ts.isPropertySignature(member) && ts.isIdentifier(member.name)) {
         if (
           member.type &&
           ts.isLiteralTypeNode(member.type) &&
@@ -55,8 +51,7 @@ export function visit(node: ts.Node, checker: ts.TypeChecker, outPath: string) {
     ts.forEachChild(node, (childNode) => {
       visit(childNode, checker, outPath);
     });
-  }
-  else if (ts.isTypeAliasDeclaration(node)) {
+  } else if (ts.isTypeAliasDeclaration(node)) {
     if (
       ts.isTypeReferenceNode(node.type) &&
       node.type.typeName &&
@@ -65,11 +60,7 @@ export function visit(node: ts.Node, checker: ts.TypeChecker, outPath: string) {
     ) {
       try {
         const type = checker.getTypeAtLocation(node);
-        const typeNode = checker.typeToTypeNode(
-          type,
-          undefined,
-          ts.NodeBuilderFlags.NoTruncation
-        );
+        const typeNode = checker.typeToTypeNode(type, undefined, ts.NodeBuilderFlags.NoTruncation);
         if (typeNode) {
           const result = traverseNode(typeNode, 0);
           const writeStream = createWriteStream(outPath, { flags: 'w' });
