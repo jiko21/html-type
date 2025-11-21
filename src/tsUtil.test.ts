@@ -2,15 +2,7 @@ import { describe, expect, mock, test } from 'bun:test';
 import * as fs from 'node:fs';
 import { join } from 'node:path';
 import ts from 'typescript';
-import {
-  createProgram,
-  extractTypeAliases,
-  getTypeName,
-  isHtmlOrBodyType,
-  processTypeScript,
-  traverseNode,
-  visit,
-} from './tsUtil';
+import { createProgram, processTypeScript, traverseNode, visit } from './tsUtil';
 
 // Helper function to create test TypeScript source files
 function createTestSourceFile(code: string, fileName: string = 'test.ts'): ts.SourceFile {
@@ -68,138 +60,6 @@ describe('TypeScript Utility Functions', () => {
           fs.unlinkSync(tempFile);
         }
       }
-    });
-  });
-
-  describe('isHtmlOrBodyType', () => {
-    test('should return true for Html type alias', () => {
-      const code = `
-        import { Html } from './html';
-        type MyPage = Html<"content">;
-      `;
-
-      const sourceFile = createTestSourceFile(code);
-      let foundHtmlType = false;
-
-      function checkNode(node: ts.Node) {
-        if (ts.isTypeAliasDeclaration(node) && node.name.text === 'MyPage') {
-          foundHtmlType = isHtmlOrBodyType(node);
-        }
-        ts.forEachChild(node, checkNode);
-      }
-
-      checkNode(sourceFile);
-      expect(foundHtmlType).toBe(true);
-    });
-
-    test('should return true for Body type alias', () => {
-      const code = `
-        import { Body } from './html';
-        type MyBody = Body<"content">;
-      `;
-
-      const sourceFile = createTestSourceFile(code);
-      let foundBodyType = false;
-
-      function checkNode(node: ts.Node) {
-        if (ts.isTypeAliasDeclaration(node) && node.name.text === 'MyBody') {
-          foundBodyType = isHtmlOrBodyType(node);
-        }
-        ts.forEachChild(node, checkNode);
-      }
-
-      checkNode(sourceFile);
-      expect(foundBodyType).toBe(true);
-    });
-
-    test('should return false for other type aliases', () => {
-      const code = `
-        type MyDiv = Div<"content">;
-        type MyString = string;
-      `;
-
-      const sourceFile = createTestSourceFile(code);
-      const results: boolean[] = [];
-
-      function checkNode(node: ts.Node) {
-        if (ts.isTypeAliasDeclaration(node)) {
-          results.push(isHtmlOrBodyType(node));
-        }
-        ts.forEachChild(node, checkNode);
-      }
-
-      checkNode(sourceFile);
-      expect(results.every((result) => result === false)).toBe(true);
-    });
-  });
-
-  describe('extractTypeAliases', () => {
-    test('should extract all type aliases from source file', () => {
-      const code = `
-        type First = string;
-        type Second = number;
-        interface NotATypeAlias {
-          value: string;
-        }
-        type Third = boolean;
-      `;
-
-      const sourceFile = createTestSourceFile(code);
-      const aliases = extractTypeAliases(sourceFile);
-
-      expect(aliases).toHaveLength(3);
-      expect(aliases[0].name.text).toBe('First');
-      expect(aliases[1].name.text).toBe('Second');
-      expect(aliases[2].name.text).toBe('Third');
-    });
-
-    test('should return empty array for file without type aliases', () => {
-      const code = `
-        interface OnlyInterface {
-          value: string;
-        }
-        
-        const variable = "test";
-        
-        function myFunction() {
-          return true;
-        }
-      `;
-
-      const sourceFile = createTestSourceFile(code);
-      const aliases = extractTypeAliases(sourceFile);
-
-      expect(aliases).toHaveLength(0);
-    });
-  });
-
-  describe('getTypeName', () => {
-    test('should return type name for type reference', () => {
-      const code = `
-        import { Html } from './html';
-        type MyPage = Html<"content">;
-      `;
-
-      const sourceFile = createTestSourceFile(code);
-      const aliases = extractTypeAliases(sourceFile);
-
-      expect(aliases).toHaveLength(1);
-      const typeName = getTypeName(aliases[0]);
-      expect(typeName).toBe('Html');
-    });
-
-    test('should return null for non-type-reference aliases', () => {
-      const code = `
-        type MyString = string;
-        type MyObject = { value: number };
-      `;
-
-      const sourceFile = createTestSourceFile(code);
-      const aliases = extractTypeAliases(sourceFile);
-
-      expect(aliases).toHaveLength(2);
-      expect(getTypeName(aliases[0])).toBeNull();
-      expect(getTypeName(aliases[1])).toBeNull();
     });
   });
 
@@ -349,51 +209,5 @@ describe('TypeScript Utility Functions', () => {
         });
       }
     });
-  });
-});
-
-describe('Integration Tests', () => {
-  test('should work with complete HTML type structure', () => {
-    const code = `
-      import { Html, Body, Div, P } from './html';
-      
-      type MyPage = Html<
-        Body<
-          Div<
-            P<"Hello World">
-          >
-        >
-      >;
-    `;
-
-    const sourceFile = createTestSourceFile(code);
-    const aliases = extractTypeAliases(sourceFile);
-
-    expect(aliases).toHaveLength(1);
-    expect(aliases[0].name.text).toBe('MyPage');
-    expect(isHtmlOrBodyType(aliases[0])).toBe(true);
-    expect(getTypeName(aliases[0])).toBe('Html');
-  });
-
-  test('should identify multiple HTML/Body types', () => {
-    const code = `
-      import { Html, Body, Div } from './html';
-      
-      type Page1 = Html<"Content 1">;
-      type Page2 = Body<"Content 2">;
-      type NotHtml = Div<"Content 3">;
-    `;
-
-    const sourceFile = createTestSourceFile(code);
-    const aliases = extractTypeAliases(sourceFile);
-
-    expect(aliases).toHaveLength(3);
-
-    const htmlBodyTypes = aliases.filter((alias) => isHtmlOrBodyType(alias));
-    expect(htmlBodyTypes).toHaveLength(2);
-
-    const typeNames = htmlBodyTypes.map((alias) => getTypeName(alias));
-    expect(typeNames).toContain('Html');
-    expect(typeNames).toContain('Body');
   });
 });
