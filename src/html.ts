@@ -93,6 +93,161 @@ export type P<T extends HTMLElement[] | HTMLElement> = T extends Div<HTMLElement
             }
           : never;
 
+type InvalidH1Content<T> = {
+  __error: `❌ <h1> cannot contain block elements. Only inline elements are allowed in <h1>.`;
+  __invalidType: T;
+};
+
+declare const h1Brand: unique symbol;
+
+export type H1<T extends HTMLElement[] | HTMLElement> = T extends Div<HTMLElement | HTMLElement[]>
+  ? InvalidH1Content<T>
+  : T extends Html<HTMLElement | HTMLElement[]>
+    ? InvalidH1Content<T>
+    : T extends Body<HTMLElement | HTMLElement[]>
+      ? InvalidH1Content<T>
+      : T extends P<HTMLElement | HTMLElement[]>
+        ? InvalidH1Content<T>
+        : T extends HTMLElement[]
+          ? {
+              [h1Brand]: 'h1';
+              children: T;
+            }
+          : T extends HTMLElement
+            ? {
+                [h1Brand]: 'h1';
+                children: T;
+              }
+            : never;
+
+type InvalidH2Content<T> = {
+  __error: `❌ <h2> cannot contain block elements. Only inline elements are allowed in <h2>.`;
+  __invalidType: T;
+};
+
+declare const h2Brand: unique symbol;
+
+export type H2<T extends HTMLElement[] | HTMLElement> = T extends Div<HTMLElement | HTMLElement[]>
+  ? InvalidH2Content<T>
+  : T extends Html<HTMLElement | HTMLElement[]>
+    ? InvalidH2Content<T>
+    : T extends Body<HTMLElement | HTMLElement[]>
+      ? InvalidH2Content<T>
+      : T extends P<HTMLElement | HTMLElement[]>
+        ? InvalidH2Content<T>
+        : T extends H1<HTMLElement | HTMLElement[]>
+          ? InvalidH2Content<T>
+          : T extends HTMLElement[]
+            ? {
+                [h2Brand]: 'h2';
+                children: T;
+              }
+            : T extends HTMLElement
+              ? {
+                  [h2Brand]: 'h2';
+                  children: T;
+                }
+              : never;
+
+type InvalidH3Content<T> = {
+  __error: `❌ <h3> cannot contain block elements. Only inline elements are allowed in <h3>.`;
+  __invalidType: T;
+};
+
+declare const h3Brand: unique symbol;
+
+export type H3<T extends HTMLElement[] | HTMLElement> = T extends Div<HTMLElement | HTMLElement[]>
+  ? InvalidH3Content<T>
+  : T extends Html<HTMLElement | HTMLElement[]>
+    ? InvalidH3Content<T>
+    : T extends Body<HTMLElement | HTMLElement[]>
+      ? InvalidH3Content<T>
+      : T extends P<HTMLElement | HTMLElement[]>
+        ? InvalidH3Content<T>
+        : T extends H1<HTMLElement | HTMLElement[]>
+          ? InvalidH3Content<T>
+          : T extends H2<HTMLElement | HTMLElement[]>
+            ? InvalidH3Content<T>
+            : T extends HTMLElement[]
+              ? {
+                  [h3Brand]: 'h3';
+                  children: T;
+                }
+              : T extends HTMLElement
+                ? {
+                    [h3Brand]: 'h3';
+                    children: T;
+                  }
+                : never;
+
+type InvalidH4Content<T> = {
+  __error: `❌ <h4> cannot contain block elements. Only inline elements are allowed in <h4>.`;
+  __invalidType: T;
+};
+
+declare const h4Brand: unique symbol;
+
+export type H4<T extends HTMLElement[] | HTMLElement> = T extends Div<HTMLElement | HTMLElement[]>
+  ? InvalidH4Content<T>
+  : T extends Html<HTMLElement | HTMLElement[]>
+    ? InvalidH4Content<T>
+    : T extends Body<HTMLElement | HTMLElement[]>
+      ? InvalidH4Content<T>
+      : T extends P<HTMLElement | HTMLElement[]>
+        ? InvalidH4Content<T>
+        : T extends H1<HTMLElement | HTMLElement[]>
+          ? InvalidH4Content<T>
+          : T extends H2<HTMLElement | HTMLElement[]>
+            ? InvalidH4Content<T>
+            : T extends H3<HTMLElement | HTMLElement[]>
+              ? InvalidH4Content<T>
+              : T extends HTMLElement[]
+                ? {
+                    [h4Brand]: 'h4';
+                    children: T;
+                  }
+                : T extends HTMLElement
+                  ? {
+                      [h4Brand]: 'h4';
+                      children: T;
+                    }
+                  : never;
+
+type InvalidH5Content<T> = {
+  __error: `❌ <h5> cannot contain block elements. Only inline elements are allowed in <h5>.`;
+  __invalidType: T;
+};
+
+declare const h5Brand: unique symbol;
+
+export type H5<T extends HTMLElement[] | HTMLElement> = T extends Div<HTMLElement | HTMLElement[]>
+  ? InvalidH5Content<T>
+  : T extends Html<HTMLElement | HTMLElement[]>
+    ? InvalidH5Content<T>
+    : T extends Body<HTMLElement | HTMLElement[]>
+      ? InvalidH5Content<T>
+      : T extends P<HTMLElement | HTMLElement[]>
+        ? InvalidH5Content<T>
+        : T extends H1<HTMLElement | HTMLElement[]>
+          ? InvalidH5Content<T>
+          : T extends H2<HTMLElement | HTMLElement[]>
+            ? InvalidH5Content<T>
+            : T extends H3<HTMLElement | HTMLElement[]>
+              ? InvalidH5Content<T>
+              : T extends H4<HTMLElement | HTMLElement[]>
+                ? InvalidH5Content<T>
+                : T extends HTMLElement[]
+                  ? {
+                      [h5Brand]: 'h5';
+                      children: T;
+                    }
+                  : T extends HTMLElement
+                    ? {
+                        [h5Brand]: 'h5';
+                        children: T;
+                      }
+                    : never;
+
 // HTML JSON構造体
 export type HtmlJson = {
   tag: string;
