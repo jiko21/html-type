@@ -6,41 +6,51 @@ export type HTMLElement =
   | Text
   | {
       children: (HTMLElement | Text)[] | HTMLElement | Text;
+      attributes?: Record<string, string | number | boolean>;
     };
 
 // HTML Brand Types
 declare const htmlBrand: unique symbol;
-export type Html<T extends HTMLElement[] | HTMLElement> = T extends HTMLElement[]
+export type Html<
+  T extends HTMLElement[] | HTMLElement,
+  A extends Record<string, string | number | boolean> = {}
+> = T extends HTMLElement[]
   ? {
       [htmlBrand]: 'html';
       children: T;
+      attributes: A;
     }
   : T extends HTMLElement
     ? {
         [htmlBrand]: 'html';
         children: T;
+        attributes: A;
       }
     : T extends Text
       ? {
           [htmlBrand]: 'html';
           children: T;
+          attributes: A;
         }
       : never;
 
 declare const bodyBrand: unique symbol;
-export type Body<T extends HTMLElement[] | HTMLElement> = T extends Html<
-  HTMLElement | HTMLElement[]
->
+export type Body<
+  T extends HTMLElement[] | HTMLElement,
+  A extends Record<string, string | number | boolean> = {}
+> = T extends Html<HTMLElement | HTMLElement[], A>
   ? never
   : T extends HTMLElement[]
     ? {
         [bodyBrand]: 'body';
         children: T;
+        attributes: A;
       }
     : T extends HTMLElement
       ? {
           [bodyBrand]: 'body';
           children: T;
+          attributes: A;
         }
       : never;
 
@@ -52,19 +62,24 @@ type InvalidDivContent<T> = {
 
 declare const divBrand: unique symbol;
 
-export type Div<T extends HTMLElement[] | HTMLElement> = T extends Html<HTMLElement | HTMLElement[]>
+export type Div<
+  T extends HTMLElement[] | HTMLElement,
+  A extends Record<string, string | number | boolean> = {}
+> = T extends Html<HTMLElement | HTMLElement[], any>
   ? InvalidDivContent<T>
-  : T extends Body<HTMLElement | HTMLElement[]>
+  : T extends Body<HTMLElement | HTMLElement[], any>
     ? InvalidDivContent<T>
     : T extends HTMLElement[]
       ? {
           [divBrand]: 'div';
           children: T;
+          attributes: A;
         }
       : T extends HTMLElement
         ? {
             [divBrand]: 'div';
             children: T;
+            attributes: A;
           }
         : never;
 
@@ -75,21 +90,26 @@ type InvalidPContent<T> = {
 
 declare const pBrand: unique symbol;
 
-export type P<T extends HTMLElement[] | HTMLElement> = T extends Div<HTMLElement | HTMLElement[]>
+export type P<
+  T extends HTMLElement[] | HTMLElement,
+  A extends Record<string, string | number | boolean> = {}
+> = T extends Div<HTMLElement | HTMLElement[], any>
   ? InvalidPContent<T>
-  : T extends Html<HTMLElement | HTMLElement[]>
+  : T extends Html<HTMLElement | HTMLElement[], any>
     ? InvalidPContent<T>
-    : T extends Body<HTMLElement | HTMLElement[]>
+    : T extends Body<HTMLElement | HTMLElement[], any>
       ? InvalidPContent<T>
       : T extends HTMLElement[]
         ? {
             [pBrand]: 'p';
             children: T;
+            attributes: A;
           }
         : T extends HTMLElement
           ? {
               [pBrand]: 'p';
               children: T;
+              attributes: A;
             }
           : never;
 
@@ -100,23 +120,28 @@ type InvalidH1Content<T> = {
 
 declare const h1Brand: unique symbol;
 
-export type H1<T extends HTMLElement[] | HTMLElement> = T extends Div<HTMLElement | HTMLElement[]>
+export type H1<
+  T extends HTMLElement[] | HTMLElement,
+  A extends Record<string, string | number | boolean> = {}
+> = T extends Div<HTMLElement | HTMLElement[], any>
   ? InvalidH1Content<T>
-  : T extends Html<HTMLElement | HTMLElement[]>
+  : T extends Html<HTMLElement | HTMLElement[], any>
     ? InvalidH1Content<T>
-    : T extends Body<HTMLElement | HTMLElement[]>
+    : T extends Body<HTMLElement | HTMLElement[], any>
       ? InvalidH1Content<T>
-      : T extends P<HTMLElement | HTMLElement[]>
+      : T extends P<HTMLElement | HTMLElement[], any>
         ? InvalidH1Content<T>
         : T extends HTMLElement[]
           ? {
               [h1Brand]: 'h1';
               children: T;
+              attributes: A;
             }
           : T extends HTMLElement
             ? {
                 [h1Brand]: 'h1';
                 children: T;
+                attributes: A;
               }
             : never;
 
@@ -127,25 +152,30 @@ type InvalidH2Content<T> = {
 
 declare const h2Brand: unique symbol;
 
-export type H2<T extends HTMLElement[] | HTMLElement> = T extends Div<HTMLElement | HTMLElement[]>
+export type H2<
+  T extends HTMLElement[] | HTMLElement,
+  A extends Record<string, string | number | boolean> = {}
+> = T extends Div<HTMLElement | HTMLElement[], any>
   ? InvalidH2Content<T>
-  : T extends Html<HTMLElement | HTMLElement[]>
+  : T extends Html<HTMLElement | HTMLElement[], any>
     ? InvalidH2Content<T>
-    : T extends Body<HTMLElement | HTMLElement[]>
+    : T extends Body<HTMLElement | HTMLElement[], any>
       ? InvalidH2Content<T>
-      : T extends P<HTMLElement | HTMLElement[]>
+      : T extends P<HTMLElement | HTMLElement[], any>
         ? InvalidH2Content<T>
-        : T extends H1<HTMLElement | HTMLElement[]>
+        : T extends H1<HTMLElement | HTMLElement[], any>
           ? InvalidH2Content<T>
           : T extends HTMLElement[]
             ? {
                 [h2Brand]: 'h2';
                 children: T;
+                attributes: A;
               }
             : T extends HTMLElement
               ? {
                   [h2Brand]: 'h2';
                   children: T;
+                  attributes: A;
                 }
               : never;
 
@@ -156,27 +186,32 @@ type InvalidH3Content<T> = {
 
 declare const h3Brand: unique symbol;
 
-export type H3<T extends HTMLElement[] | HTMLElement> = T extends Div<HTMLElement | HTMLElement[]>
+export type H3<
+  T extends HTMLElement[] | HTMLElement,
+  A extends Record<string, string | number | boolean> = {}
+> = T extends Div<HTMLElement | HTMLElement[], any>
   ? InvalidH3Content<T>
-  : T extends Html<HTMLElement | HTMLElement[]>
+  : T extends Html<HTMLElement | HTMLElement[], any>
     ? InvalidH3Content<T>
-    : T extends Body<HTMLElement | HTMLElement[]>
+    : T extends Body<HTMLElement | HTMLElement[], any>
       ? InvalidH3Content<T>
-      : T extends P<HTMLElement | HTMLElement[]>
+      : T extends P<HTMLElement | HTMLElement[], any>
         ? InvalidH3Content<T>
-        : T extends H1<HTMLElement | HTMLElement[]>
+        : T extends H1<HTMLElement | HTMLElement[], any>
           ? InvalidH3Content<T>
-          : T extends H2<HTMLElement | HTMLElement[]>
+          : T extends H2<HTMLElement | HTMLElement[], any>
             ? InvalidH3Content<T>
             : T extends HTMLElement[]
               ? {
                   [h3Brand]: 'h3';
                   children: T;
+                  attributes: A;
                 }
               : T extends HTMLElement
                 ? {
                     [h3Brand]: 'h3';
                     children: T;
+                    attributes: A;
                   }
                 : never;
 
@@ -187,29 +222,34 @@ type InvalidH4Content<T> = {
 
 declare const h4Brand: unique symbol;
 
-export type H4<T extends HTMLElement[] | HTMLElement> = T extends Div<HTMLElement | HTMLElement[]>
+export type H4<
+  T extends HTMLElement[] | HTMLElement,
+  A extends Record<string, string | number | boolean> = {}
+> = T extends Div<HTMLElement | HTMLElement[], any>
   ? InvalidH4Content<T>
-  : T extends Html<HTMLElement | HTMLElement[]>
+  : T extends Html<HTMLElement | HTMLElement[], any>
     ? InvalidH4Content<T>
-    : T extends Body<HTMLElement | HTMLElement[]>
+    : T extends Body<HTMLElement | HTMLElement[], any>
       ? InvalidH4Content<T>
-      : T extends P<HTMLElement | HTMLElement[]>
+      : T extends P<HTMLElement | HTMLElement[], any>
         ? InvalidH4Content<T>
-        : T extends H1<HTMLElement | HTMLElement[]>
+        : T extends H1<HTMLElement | HTMLElement[], any>
           ? InvalidH4Content<T>
-          : T extends H2<HTMLElement | HTMLElement[]>
+          : T extends H2<HTMLElement | HTMLElement[], any>
             ? InvalidH4Content<T>
-            : T extends H3<HTMLElement | HTMLElement[]>
+            : T extends H3<HTMLElement | HTMLElement[], any>
               ? InvalidH4Content<T>
               : T extends HTMLElement[]
                 ? {
                     [h4Brand]: 'h4';
                     children: T;
+                    attributes: A;
                   }
                 : T extends HTMLElement
                   ? {
                       [h4Brand]: 'h4';
                       children: T;
+                      attributes: A;
                     }
                   : never;
 
@@ -220,31 +260,36 @@ type InvalidH5Content<T> = {
 
 declare const h5Brand: unique symbol;
 
-export type H5<T extends HTMLElement[] | HTMLElement> = T extends Div<HTMLElement | HTMLElement[]>
+export type H5<
+  T extends HTMLElement[] | HTMLElement,
+  A extends Record<string, string | number | boolean> = {}
+> = T extends Div<HTMLElement | HTMLElement[], any>
   ? InvalidH5Content<T>
-  : T extends Html<HTMLElement | HTMLElement[]>
+  : T extends Html<HTMLElement | HTMLElement[], any>
     ? InvalidH5Content<T>
-    : T extends Body<HTMLElement | HTMLElement[]>
+    : T extends Body<HTMLElement | HTMLElement[], any>
       ? InvalidH5Content<T>
-      : T extends P<HTMLElement | HTMLElement[]>
+      : T extends P<HTMLElement | HTMLElement[], any>
         ? InvalidH5Content<T>
-        : T extends H1<HTMLElement | HTMLElement[]>
+        : T extends H1<HTMLElement | HTMLElement[], any>
           ? InvalidH5Content<T>
-          : T extends H2<HTMLElement | HTMLElement[]>
+          : T extends H2<HTMLElement | HTMLElement[], any>
             ? InvalidH5Content<T>
-            : T extends H3<HTMLElement | HTMLElement[]>
+            : T extends H3<HTMLElement | HTMLElement[], any>
               ? InvalidH5Content<T>
-              : T extends H4<HTMLElement | HTMLElement[]>
+              : T extends H4<HTMLElement | HTMLElement[], any>
                 ? InvalidH5Content<T>
                 : T extends HTMLElement[]
                   ? {
                       [h5Brand]: 'h5';
                       children: T;
+                      attributes: A;
                     }
                   : T extends HTMLElement
                     ? {
                         [h5Brand]: 'h5';
                         children: T;
+                        attributes: A;
                       }
                     : never;
 
@@ -252,6 +297,10 @@ export type H5<T extends HTMLElement[] | HTMLElement> = T extends Div<HTMLElemen
 export type HtmlJson = {
   tag: string;
   children: (HtmlJson | string)[];
+  attributes: {
+    key: string;
+    value: string;
+  }[] | undefined;
 };
 
 // HTML レンダリング関数
@@ -276,7 +325,8 @@ export function renderToStream(
   indent: number = 0
 ) {
   const space = ' '.repeat(indent * 2);
-  writeStream.write(`${space}<${input.tag}>\n`);
+  const attributes = input.attributes?.map((item) => `${item.key}="${item.value}"`).join(" ");
+  writeStream.write(`${space}<${input.tag}${attributes ? ` ${attributes}` : ''}>\n`);
   input.children.forEach((item) => {
     if (typeof item === 'string') {
       writeStream.write(`${space}  ${item}\n`);
