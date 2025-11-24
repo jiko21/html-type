@@ -1,45 +1,80 @@
 // TypeScript AST Processing Utilities
 
-import { createWriteStream } from 'node:fs';
-import ts, { SyntaxKind } from 'typescript';
-import { type HtmlJson, renderToStream } from './html';
+import {createWriteStream} from 'node:fs';
+import ts from 'typescript';
+import {type HtmlJson, renderToStream} from './html';
+import assert from "node:assert";
+
+function parseAttributes(node: ts.Node | undefined): HtmlJson['attributes'] | undefined {
+  if (node && ts.isTypeLiteralNode(node)) {
+    return node.members.map((obj) => {
+      if (
+        ts.isPropertySignature(obj) &&
+        ts.isIdentifier(obj.name) &&
+        obj.type &&
+        ts.isLiteralTypeNode(obj.type) &&
+        ts.isStringLiteral(obj.type.literal)
+      ) {
+        return {key: obj.name.escapedText.toString(), value: obj.type.literal.text}
+      } else {
+        throw new Error('Invalid attribute was found in attributes.')
+      }
+    });
+  }
+  throw new Error('Unexpected error when parsing attributes.');
+}
+
+function parseChild(node: ts.Node, indent: number): HtmlJson | string {
+  if (ts.isLiteralTypeNode(node) && ts.isStringLiteral(node.literal)) {
+    return node.literal.text;
+  } else if (ts.isTypeLiteralNode(node)) {
+    return traverseNode(node, indent);
+  } else {
+    throw new Error('unexpected type while parsing children elements.')
+  }
+}
+
+function parseChildren(node: ts.Node, indent: number): HtmlJson['children'] {
+  // node should be propertySignature
+  assert(ts.isPropertySignature(node));
+  // type is not undefined
+  assert(node.type)
+  if (ts.isTypeLiteralNode(node.type)) {
+    return [traverseNode(node.type, indent + 2)];
+  } else if (ts.isLiteralTypeNode(node.type) && ts.isStringLiteral(node.type.literal)) {
+    return [node.type.literal.text];
+  } else if (ts.isTupleTypeNode(node.type)) {
+    return node.type.elements.map((val) => parseChild(val, indent));
+  } else {
+    throw new Error("Unexpected error when parsing children.");
+  }
+}
 
 export function traverseNode(node: ts.Node, indent: number = 0): HtmlJson {
   if (ts.isTypeLiteralNode(node)) {
     let tag = '';
     let children: (HtmlJson | string)[] = [];
-    node.members.forEach((member) => {
-      if (member.name && ts.isPropertySignature(member) && ts.isIdentifier(member.name)) {
-        if (
-          member.type &&
-          ts.isLiteralTypeNode(member.type) &&
-          ts.isStringLiteral(member.type.literal)
-        ) {
-          children = [member.type.literal.text];
-        } else if (member.type && ts.isPropertySignature(member)) {
-          if (ts.isTupleTypeNode(member.type)) {
-            // loop
-            children = member.type.elements
-              .filter((type) => type)
-              .map((type) => traverseNode(type, indent + 2));
-          } else if (ts.isTypeLiteralNode(member.type)) {
-            children = [traverseNode(member.type, indent + 2)];
-          }
+    let attributes: { key: string, value: string }[] | undefined;
+    node.members.forEach(member => {
+      if (ts.isPropertySignature(member) && ts.isComputedPropertyName(member.name) && ts.isIdentifier(member.name.expression)) {
+        tag = member.name.expression.escapedText.toString().replace('Brand', '');
+      } else if (ts.isPropertySignature(member) && ts.isIdentifier(member.name) && member.type) {
+        switch (member.name.escapedText) {
+          case 'attributes':
+            attributes = parseAttributes(member.type);
+            break;
+          case 'children':
+            children = parseChildren(member, indent + 2);
+            break;
+          default:
+            throw new Error(`unexpected type ${member.type}`);
         }
-      } else if (
-        member.name &&
-        ts.isComputedPropertyName(member.name) &&
-        ts.isIdentifier(member.name.expression) &&
-        member.name.expression.escapedText
-      ) {
-        tag = member.name.expression.escapedText.replace('Brand', '');
-      } else {
-        throw new Error('Unexpected type');
       }
     });
     return {
       tag,
       children,
+      attributes,
     };
   } else {
     throw new Error('Unexpected type');
@@ -63,7 +98,7 @@ export function visit(node: ts.Node, checker: ts.TypeChecker, outPath: string) {
         const typeNode = checker.typeToTypeNode(type, undefined, ts.NodeBuilderFlags.NoTruncation);
         if (typeNode) {
           const result = traverseNode(typeNode, 0);
-          const writeStream = createWriteStream(outPath, { flags: 'w' });
+          const writeStream = createWriteStream(outPath, {flags: 'w'});
           renderToStream(result, writeStream);
           writeStream.end('\n');
         }
@@ -106,7 +141,7 @@ export function processTypeScript(filePath: string, outPath: string): boolean {
     return false;
   }
 
-  const { sourceFile, checker } = result;
+  const {sourceFile, checker} = result;
 
   try {
     visit(sourceFile, checker, outPath);

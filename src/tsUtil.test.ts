@@ -126,7 +126,7 @@ describe('TypeScript Utility Functions', () => {
       findNonTypeLiteral(sourceFile);
 
       if (nonTypeLiteralNode) {
-        expect(() => traverseNode(nonTypeLiteralNode!)).toThrow('Unexpected type');
+        expect(() => traverseNode(nonTypeLiteralNode!, 0)).toThrow('Unexpected type');
       }
     });
   });
