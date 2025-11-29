@@ -1,4 +1,3 @@
-const NON_CHILDREN_TAGS = ['img', 'link'];
 export type HtmlJson = {
   tag: string;
   children: (HtmlJson | string)[] | undefined;
