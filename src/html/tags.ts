@@ -307,7 +307,7 @@ declare const aBrand: unique symbol;
 
 export type A<
   T extends HTMLElement[] | HTMLElement,
-  Attr extends AllHTMLAttributes = {}
+  Attr extends AllHTMLAttributes = {},
 > = T extends HTMLElement[]
   ? {
       [aBrand]: 'a';
