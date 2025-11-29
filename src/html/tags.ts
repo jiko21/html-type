@@ -1,4 +1,4 @@
-// HTML Type System - 型安全なHTML構造を定義
+import type { AllHTMLAttributes } from './attributes';
 
 export type Text = string;
 
@@ -6,14 +6,13 @@ export type HTMLElement =
   | Text
   | {
       children: (HTMLElement | Text)[] | HTMLElement | Text;
-      attributes?: Record<string, string | number | boolean>;
+      attributes?: AllHTMLAttributes;
     };
 
-// HTML Brand Types
 declare const htmlBrand: unique symbol;
 export type Html<
   T extends HTMLElement[] | HTMLElement,
-  A extends Record<string, string | number | boolean> = {}
+  A extends AllHTMLAttributes = {}
 > = T extends HTMLElement[]
   ? {
       [htmlBrand]: 'html';
@@ -37,7 +36,7 @@ export type Html<
 declare const bodyBrand: unique symbol;
 export type Body<
   T extends HTMLElement[] | HTMLElement,
-  A extends Record<string, string | number | boolean> = {}
+  A extends AllHTMLAttributes = {}
 > = T extends Html<HTMLElement | HTMLElement[], A>
   ? never
   : T extends HTMLElement[]
@@ -54,7 +53,6 @@ export type Body<
         }
       : never;
 
-// エラー型定義
 type InvalidDivContent<T> = {
   __error: `❌ <div> cannot contain <html> or <body> elements. Invalid HTML structure.`;
   __invalidType: T;
@@ -64,7 +62,7 @@ declare const divBrand: unique symbol;
 
 export type Div<
   T extends HTMLElement[] | HTMLElement,
-  A extends Record<string, string | number | boolean> = {}
+  A extends AllHTMLAttributes = {}
 > = T extends Html<HTMLElement | HTMLElement[], any>
   ? InvalidDivContent<T>
   : T extends Body<HTMLElement | HTMLElement[], any>
@@ -92,7 +90,7 @@ declare const pBrand: unique symbol;
 
 export type P<
   T extends HTMLElement[] | HTMLElement,
-  A extends Record<string, string | number | boolean> = {}
+  A extends AllHTMLAttributes = {}
 > = T extends Div<HTMLElement | HTMLElement[], any>
   ? InvalidPContent<T>
   : T extends Html<HTMLElement | HTMLElement[], any>
@@ -122,7 +120,7 @@ declare const h1Brand: unique symbol;
 
 export type H1<
   T extends HTMLElement[] | HTMLElement,
-  A extends Record<string, string | number | boolean> = {}
+  A extends AllHTMLAttributes = {}
 > = T extends Div<HTMLElement | HTMLElement[], any>
   ? InvalidH1Content<T>
   : T extends Html<HTMLElement | HTMLElement[], any>
@@ -154,7 +152,7 @@ declare const h2Brand: unique symbol;
 
 export type H2<
   T extends HTMLElement[] | HTMLElement,
-  A extends Record<string, string | number | boolean> = {}
+  A extends AllHTMLAttributes = {}
 > = T extends Div<HTMLElement | HTMLElement[], any>
   ? InvalidH2Content<T>
   : T extends Html<HTMLElement | HTMLElement[], any>
@@ -188,7 +186,7 @@ declare const h3Brand: unique symbol;
 
 export type H3<
   T extends HTMLElement[] | HTMLElement,
-  A extends Record<string, string | number | boolean> = {}
+  A extends AllHTMLAttributes = {}
 > = T extends Div<HTMLElement | HTMLElement[], any>
   ? InvalidH3Content<T>
   : T extends Html<HTMLElement | HTMLElement[], any>
@@ -224,7 +222,7 @@ declare const h4Brand: unique symbol;
 
 export type H4<
   T extends HTMLElement[] | HTMLElement,
-  A extends Record<string, string | number | boolean> = {}
+  A extends AllHTMLAttributes = {}
 > = T extends Div<HTMLElement | HTMLElement[], any>
   ? InvalidH4Content<T>
   : T extends Html<HTMLElement | HTMLElement[], any>
@@ -262,7 +260,7 @@ declare const h5Brand: unique symbol;
 
 export type H5<
   T extends HTMLElement[] | HTMLElement,
-  A extends Record<string, string | number | boolean> = {}
+  A extends AllHTMLAttributes = {}
 > = T extends Div<HTMLElement | HTMLElement[], any>
   ? InvalidH5Content<T>
   : T extends Html<HTMLElement | HTMLElement[], any>
@@ -293,58 +291,14 @@ export type H5<
                       }
                     : never;
 
-declare const imageBrand: unique symbol;
+declare const imgBrand: unique symbol;
 
-export type Image<
-  A extends Record<string, string | number | boolean> = {}
+export type Img<
+  A extends AllHTMLAttributes = {}
 > = {
-  [K in typeof imageBrand | 'children' | 'attributes']:
-    K extends typeof imageBrand ? 'image'
+  [K in typeof imgBrand | 'children' | 'attributes']:
+    K extends typeof imgBrand ? 'img'
     : K extends 'children' ? []
     : K extends 'attributes' ? A
     : never;
-}
-
-// HTML JSON構造体
-export type HtmlJson = {
-  tag: string;
-  children: (HtmlJson | string)[];
-  attributes: {
-    key: string;
-    value: string;
-  }[] | undefined;
-};
-
-// HTML レンダリング関数
-export function renderToHtml(input: HtmlJson, indent: number = 0): string {
-  const space = ' '.repeat(indent * 2);
-  return `${space}<${input.tag}>
-${input.children
-  .map((item) => {
-    if (typeof item === 'string') {
-      return `${space}  ${item}`;
-    } else {
-      return renderToHtml(item, indent + 1);
-    }
-  })
-  .join('\n')}
-${space}</${input.tag}>`;
-}
-
-export function renderToStream(
-  input: HtmlJson,
-  writeStream: { write: (data: string) => void },
-  indent: number = 0
-) {
-  const space = ' '.repeat(indent * 2);
-  const attributes = input.attributes?.map((item) => `${item.key}="${item.value}"`).join(" ");
-  writeStream.write(`${space}<${input.tag}${attributes ? ` ${attributes}` : ''}>\n`);
-  input.children.forEach((item) => {
-    if (typeof item === 'string') {
-      writeStream.write(`${space}  ${item}\n`);
-    } else {
-      renderToStream(item, writeStream, indent + 1);
-    }
-  });
-  writeStream.write(`${space}</${input.tag}>\n`);
 }
