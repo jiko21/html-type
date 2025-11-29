@@ -298,7 +298,7 @@ export type Img<
 > = {
   [K in typeof imgBrand | 'children' | 'attributes']:
     K extends typeof imgBrand ? 'img'
-    : K extends 'children' ? []
+    : K extends 'children' ? never
     : K extends 'attributes' ? A
     : never;
 }

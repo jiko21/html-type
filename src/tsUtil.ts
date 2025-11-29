@@ -40,7 +40,7 @@ function parseChild(node: ts.Node, indent: number): HtmlJson | string {
       }
       return {
         tag: tagName,
-        children: [],
+        children: undefined,
         attributes
       };
     }
@@ -70,7 +70,7 @@ function parseChildren(node: ts.Node, indent: number): HtmlJson['children'] {
 export function traverseNode(node: ts.Node, indent: number = 0): HtmlJson {
   if (ts.isTypeLiteralNode(node)) {
     let tag = '';
-    let children: (HtmlJson | string)[] = [];
+    let children: (HtmlJson | string)[] | undefined = [];
     let attributes: { key: string, value: string }[] | undefined;
     node.members.forEach(member => {
       if (ts.isPropertySignature(member) && ts.isComputedPropertyName(member.name) && ts.isIdentifier(member.name.expression)) {
