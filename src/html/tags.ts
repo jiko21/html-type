@@ -302,3 +302,22 @@ export type Img<A extends AllHTMLAttributes = {}> = {
         ? A
         : never;
 };
+
+declare const aBrand: unique symbol;
+
+export type A<
+  T extends HTMLElement[] | HTMLElement,
+  Attr extends AllHTMLAttributes = {},
+> = T extends HTMLElement[]
+  ? {
+      [aBrand]: 'a';
+      children: T;
+      attributes: Attr;
+    }
+  : T extends HTMLElement
+    ? {
+        [aBrand]: 'a';
+        children: T;
+        attributes: Attr;
+      }
+    : never;
