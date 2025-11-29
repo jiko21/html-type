@@ -1,7 +1,7 @@
 // TypeScript AST Processing Utilities
 
 import {createWriteStream} from 'node:fs';
-import ts from 'typescript';
+import ts, {SyntaxKind} from 'typescript';
 import {type HtmlJson, renderToStream} from './html';
 import assert from "node:assert";
 
@@ -29,8 +29,25 @@ function parseChild(node: ts.Node, indent: number): HtmlJson | string {
     return node.literal.text;
   } else if (ts.isTypeLiteralNode(node)) {
     return traverseNode(node, indent);
+  } else if (ts.isTypeReferenceNode(node)) {
+    // Handle Image and other void elements that may remain as TypeReference
+    if (ts.isIdentifier(node.typeName)) {
+      const tagName = node.typeName.escapedText.toString().toLowerCase();
+      // Parse attributes from type arguments if present
+      let attributes: { key: string, value: string }[] | undefined;
+      if (node.typeArguments && node.typeArguments.length > 0) {
+        attributes = parseAttributes(node.typeArguments[0]);
+      }
+      return {
+        tag: tagName,
+        children: [],
+        attributes
+      };
+    }
+    throw new Error(`unexpected type reference while parsing children elements.`)
   } else {
-    throw new Error('unexpected type while parsing children elements.')
+    console.log(node)
+    throw new Error(`unexpected type while parsing children elements. node kind is ${SyntaxKind[node.kind]}`)
   }
 }
 
@@ -95,7 +112,12 @@ export function visit(node: ts.Node, checker: ts.TypeChecker, outPath: string) {
     ) {
       try {
         const type = checker.getTypeAtLocation(node);
-        const typeNode = checker.typeToTypeNode(type, undefined, ts.NodeBuilderFlags.NoTruncation);
+        const typeNode = checker.typeToTypeNode(
+          type,
+          undefined,
+          ts.NodeBuilderFlags.NoTruncation |
+          ts.NodeBuilderFlags.NoTypeReduction
+        );
         if (typeNode) {
           const result = traverseNode(typeNode, 0);
           const writeStream = createWriteStream(outPath, {flags: 'w'});

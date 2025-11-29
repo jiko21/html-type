@@ -293,6 +293,18 @@ export type H5<
                       }
                     : never;
 
+declare const imageBrand: unique symbol;
+
+export type Image<
+  A extends Record<string, string | number | boolean> = {}
+> = {
+  [K in typeof imageBrand | 'children' | 'attributes']:
+    K extends typeof imageBrand ? 'image'
+    : K extends 'children' ? []
+    : K extends 'attributes' ? A
+    : never;
+}
+
 // HTML JSON構造体
 export type HtmlJson = {
   tag: string;
