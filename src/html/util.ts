@@ -1,11 +1,13 @@
-const NON_CHILDREN_TAGS = ['img', 'link']
+const NON_CHILDREN_TAGS = ['img', 'link'];
 export type HtmlJson = {
   tag: string;
   children: (HtmlJson | string)[] | undefined;
-  attributes: {
-    key: string;
-    value: string;
-  }[] | undefined;
+  attributes:
+    | {
+        key: string;
+        value: string;
+      }[]
+    | undefined;
 };
 
 export function renderToStream(
@@ -14,7 +16,7 @@ export function renderToStream(
   indent: number = 0
 ) {
   const space = ' '.repeat(indent * 2);
-  const attributes = input.attributes?.map((item) => `${item.key}="${item.value}"`).join(" ");
+  const attributes = input.attributes?.map((item) => `${item.key}="${item.value}"`).join(' ');
   if (input.children) {
     writeStream.write(`${space}<${input.tag}${attributes ? ` ${attributes}` : ''}>\n`);
     input.children?.forEach((item) => {

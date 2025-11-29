@@ -1,9 +1,9 @@
 // TypeScript AST Processing Utilities
 
-import {createWriteStream} from 'node:fs';
-import ts, {SyntaxKind} from 'typescript';
-import {type HtmlJson, renderToStream} from './html';
-import assert from "node:assert";
+import assert from 'node:assert';
+import { createWriteStream } from 'node:fs';
+import ts, { SyntaxKind } from 'typescript';
+import { type HtmlJson, renderToStream } from './html';
 
 function parseAttributes(node: ts.Node | undefined): HtmlJson['attributes'] | undefined {
   if (node && ts.isTypeLiteralNode(node)) {
@@ -15,9 +15,9 @@ function parseAttributes(node: ts.Node | undefined): HtmlJson['attributes'] | un
         ts.isLiteralTypeNode(obj.type) &&
         ts.isStringLiteral(obj.type.literal)
       ) {
-        return {key: obj.name.escapedText.toString(), value: obj.type.literal.text}
+        return { key: obj.name.escapedText.toString(), value: obj.type.literal.text };
       } else {
-        throw new Error('Invalid attribute was found in attributes.')
+        throw new Error('Invalid attribute was found in attributes.');
       }
     });
   }
@@ -34,20 +34,22 @@ function parseChild(node: ts.Node, indent: number): HtmlJson | string {
     if (ts.isIdentifier(node.typeName)) {
       const tagName = node.typeName.escapedText.toString().toLowerCase();
       // Parse attributes from type arguments if present
-      let attributes: { key: string, value: string }[] | undefined;
+      let attributes: { key: string; value: string }[] | undefined;
       if (node.typeArguments && node.typeArguments.length > 0) {
         attributes = parseAttributes(node.typeArguments[0]);
       }
       return {
         tag: tagName,
         children: undefined,
-        attributes
+        attributes,
       };
     }
-    throw new Error(`unexpected type reference while parsing children elements.`)
+    throw new Error(`unexpected type reference while parsing children elements.`);
   } else {
-    console.log(node)
-    throw new Error(`unexpected type while parsing children elements. node kind is ${SyntaxKind[node.kind]}`)
+    console.log(node);
+    throw new Error(
+      `unexpected type while parsing children elements. node kind is ${SyntaxKind[node.kind]}`
+    );
   }
 }
 
@@ -55,7 +57,7 @@ function parseChildren(node: ts.Node, indent: number): HtmlJson['children'] {
   // node should be propertySignature
   assert(ts.isPropertySignature(node));
   // type is not undefined
-  assert(node.type)
+  assert(node.type);
   if (ts.isTypeLiteralNode(node.type)) {
     return [traverseNode(node.type, indent + 2)];
   } else if (ts.isLiteralTypeNode(node.type) && ts.isStringLiteral(node.type.literal)) {
@@ -63,7 +65,7 @@ function parseChildren(node: ts.Node, indent: number): HtmlJson['children'] {
   } else if (ts.isTupleTypeNode(node.type)) {
     return node.type.elements.map((val) => parseChild(val, indent));
   } else {
-    throw new Error("Unexpected error when parsing children.");
+    throw new Error('Unexpected error when parsing children.');
   }
 }
 
@@ -71,9 +73,13 @@ export function traverseNode(node: ts.Node, indent: number = 0): HtmlJson {
   if (ts.isTypeLiteralNode(node)) {
     let tag = '';
     let children: (HtmlJson | string)[] | undefined = [];
-    let attributes: { key: string, value: string }[] | undefined;
-    node.members.forEach(member => {
-      if (ts.isPropertySignature(member) && ts.isComputedPropertyName(member.name) && ts.isIdentifier(member.name.expression)) {
+    let attributes: { key: string; value: string }[] | undefined;
+    node.members.forEach((member) => {
+      if (
+        ts.isPropertySignature(member) &&
+        ts.isComputedPropertyName(member.name) &&
+        ts.isIdentifier(member.name.expression)
+      ) {
         tag = member.name.expression.escapedText.toString().replace('Brand', '');
       } else if (ts.isPropertySignature(member) && ts.isIdentifier(member.name) && member.type) {
         switch (member.name.escapedText) {
@@ -115,12 +121,11 @@ export function visit(node: ts.Node, checker: ts.TypeChecker, outPath: string) {
         const typeNode = checker.typeToTypeNode(
           type,
           undefined,
-          ts.NodeBuilderFlags.NoTruncation |
-          ts.NodeBuilderFlags.NoTypeReduction
+          ts.NodeBuilderFlags.NoTruncation | ts.NodeBuilderFlags.NoTypeReduction
         );
         if (typeNode) {
           const result = traverseNode(typeNode, 0);
-          const writeStream = createWriteStream(outPath, {flags: 'w'});
+          const writeStream = createWriteStream(outPath, { flags: 'w' });
           renderToStream(result, writeStream);
           writeStream.end('\n');
         }
@@ -163,7 +168,7 @@ export function processTypeScript(filePath: string, outPath: string): boolean {
     return false;
   }
 
-  const {sourceFile, checker} = result;
+  const { sourceFile, checker } = result;
 
   try {
     visit(sourceFile, checker, outPath);

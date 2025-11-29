@@ -12,7 +12,7 @@ export type HTMLElement =
 declare const htmlBrand: unique symbol;
 export type Html<
   T extends HTMLElement[] | HTMLElement,
-  A extends AllHTMLAttributes = {}
+  A extends AllHTMLAttributes = {},
 > = T extends HTMLElement[]
   ? {
       [htmlBrand]: 'html';
@@ -36,7 +36,7 @@ export type Html<
 declare const bodyBrand: unique symbol;
 export type Body<
   T extends HTMLElement[] | HTMLElement,
-  A extends AllHTMLAttributes = {}
+  A extends AllHTMLAttributes = {},
 > = T extends Html<HTMLElement | HTMLElement[], A>
   ? never
   : T extends HTMLElement[]
@@ -62,7 +62,7 @@ declare const divBrand: unique symbol;
 
 export type Div<
   T extends HTMLElement[] | HTMLElement,
-  A extends AllHTMLAttributes = {}
+  A extends AllHTMLAttributes = {},
 > = T extends Html<HTMLElement | HTMLElement[], any>
   ? InvalidDivContent<T>
   : T extends Body<HTMLElement | HTMLElement[], any>
@@ -90,7 +90,7 @@ declare const pBrand: unique symbol;
 
 export type P<
   T extends HTMLElement[] | HTMLElement,
-  A extends AllHTMLAttributes = {}
+  A extends AllHTMLAttributes = {},
 > = T extends Div<HTMLElement | HTMLElement[], any>
   ? InvalidPContent<T>
   : T extends Html<HTMLElement | HTMLElement[], any>
@@ -120,7 +120,7 @@ declare const h1Brand: unique symbol;
 
 export type H1<
   T extends HTMLElement[] | HTMLElement,
-  A extends AllHTMLAttributes = {}
+  A extends AllHTMLAttributes = {},
 > = T extends Div<HTMLElement | HTMLElement[], any>
   ? InvalidH1Content<T>
   : T extends Html<HTMLElement | HTMLElement[], any>
@@ -152,7 +152,7 @@ declare const h2Brand: unique symbol;
 
 export type H2<
   T extends HTMLElement[] | HTMLElement,
-  A extends AllHTMLAttributes = {}
+  A extends AllHTMLAttributes = {},
 > = T extends Div<HTMLElement | HTMLElement[], any>
   ? InvalidH2Content<T>
   : T extends Html<HTMLElement | HTMLElement[], any>
@@ -186,7 +186,7 @@ declare const h3Brand: unique symbol;
 
 export type H3<
   T extends HTMLElement[] | HTMLElement,
-  A extends AllHTMLAttributes = {}
+  A extends AllHTMLAttributes = {},
 > = T extends Div<HTMLElement | HTMLElement[], any>
   ? InvalidH3Content<T>
   : T extends Html<HTMLElement | HTMLElement[], any>
@@ -222,7 +222,7 @@ declare const h4Brand: unique symbol;
 
 export type H4<
   T extends HTMLElement[] | HTMLElement,
-  A extends AllHTMLAttributes = {}
+  A extends AllHTMLAttributes = {},
 > = T extends Div<HTMLElement | HTMLElement[], any>
   ? InvalidH4Content<T>
   : T extends Html<HTMLElement | HTMLElement[], any>
@@ -260,7 +260,7 @@ declare const h5Brand: unique symbol;
 
 export type H5<
   T extends HTMLElement[] | HTMLElement,
-  A extends AllHTMLAttributes = {}
+  A extends AllHTMLAttributes = {},
 > = T extends Div<HTMLElement | HTMLElement[], any>
   ? InvalidH5Content<T>
   : T extends Html<HTMLElement | HTMLElement[], any>
@@ -293,12 +293,12 @@ export type H5<
 
 declare const imgBrand: unique symbol;
 
-export type Img<
-  A extends AllHTMLAttributes = {}
-> = {
-  [K in typeof imgBrand | 'children' | 'attributes']:
-    K extends typeof imgBrand ? 'img'
-    : K extends 'children' ? never
-    : K extends 'attributes' ? A
-    : never;
-}
+export type Img<A extends AllHTMLAttributes = {}> = {
+  [K in typeof imgBrand | 'children' | 'attributes']: K extends typeof imgBrand
+    ? 'img'
+    : K extends 'children'
+      ? never
+      : K extends 'attributes'
+        ? A
+        : never;
+};
